@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI คำนวณแคลอรี่จากการวิ่ง</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            background: url('https://img.kapook.com/u/2016/wanchalerm/Health_06_59/Run_h.jpg') center center/cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.88);
+            padding: 32px 32px 24px 32px;
+            border-radius: 18px;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px 0 rgba(60,60,90,0.10), 0 1.5px 4px 0 rgba(0,0,0,0.04);
+        }
+        h2, h3 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-bottom: 18px;
+            color: #22223b;
+        }
+        label {
+            display: block;
+            margin-top: 18px;
+            font-size: 1rem;
+            color: #4a4e69;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 6px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: border 0.2s;
+        }
+        input:focus, select:focus {
+            border: 1.5px solid #7b9acc;
+            outline: none;
+            background: #fff;
+        }
+        button {
+            margin-top: 28px;
+            padding: 12px 0;
+            background: linear-gradient(90deg, #4f8cff 0%, #6a82fb 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px 0 rgba(79,140,255,0.08);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #3b6fd8 0%, #4f8cff 100%);
+            box-shadow: 0 4px 16px 0 rgba(79,140,255,0.13);
+        }
+        .result {
+            margin-top: 28px;
+            background: #f4f9ff;
+            padding: 20px 18px;
+            border-radius: 10px;
+            border: 1.5px solid #e0e7ef;
+            color: #22223b;
+            font-size: 1.08rem;
+            box-shadow: 0 1.5px 6px 0 rgba(79,140,255,0.06);
+        }
+        #authContainer {
+            margin-top: 0;
+            padding-top: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        #authContainer::before {
+            content: none;
+        }
+        #authContainer > * {
+            position: relative;
+            z-index: 1;
+        }
+        #authContainer img {
+            display: none;
+        }
+        #authContainer form {
+            background: transparent;
+            box-shadow: none;
+        }
+        #authMsg {
+            font-size: 1rem;
+        }
+        a {
+            color: #4f8cff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        a:hover {
+            color: #22223b;
+            text-decoration: underline;
+        }
+        .login-quote {
+            position: fixed;
+            left: 0; right: 0;
+            bottom: 32px;
+            text-align: center;
+            font-family: 'Oswald', 'Bebas Neue', 'Segoe UI', Arial, sans-serif;
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.92);
+            text-shadow: 0 2px 16px rgba(0,0,0,0.32), 0 1px 0 #222;
+            letter-spacing: 2px;
+            z-index: 10;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="authContainer">
+        <div style="text-align:center; margin-bottom:24px;">
+            <img src="https://img.kapook.com/u/2016/wanchalerm/Health_06_59/Run_h.jpg" alt="running" style="max-width:180px; width:60%; border-radius:16px; box-shadow:0 2px 12px 0 rgba(60,60,90,0.10); margin-bottom:12px;">
+        </div>
+        <h2 id="authTitle" style="text-align:center; margin-bottom:20px;">เข้าสู่ระบบ</h2>
+        <form id="loginForm" style="max-width:320px; margin:auto;">
+            <label>ชื่อผู้ใช้:
+                <input type="text" id="loginUsername" required>
+            </label>
+            <label>รหัสผ่าน:
+                <input type="password" id="loginPassword" required>
+            </label>
+            <button type="submit">เข้าสู่ระบบ</button>
+        </form>
+        <form id="registerForm" style="display:none; max-width:320px; margin:auto;">
+            <label>ชื่อผู้ใช้:
+                <input type="text" id="registerUsername" required>
+            </label>
+            <label>รหัสผ่าน:
+                <input type="password" id="registerPassword" required>
+            </label>
+            <button type="submit">สมัครสมาชิก</button>
+        </form>
+        <div style="margin-top:16px; text-align:center;">
+            <span id="toggleAuth">ยังไม่มีบัญชี? <a href="#" id="showRegister">สมัครสมาชิก</a></span>
+            <span id="toggleLogin" style="display:none">มีบัญชีแล้ว? <a href="#" id="showLogin">เข้าสู่ระบบ</a></span>
+        </div>
+        <div id="authMsg" style="color:red;margin-top:12px;text-align:center;"></div>
+    </div>
+    <div class="login-quote">Your only limit is you. Hit the pavement</div>
+    <div class="container" style="display:none">
+        <h2>AI คำนวณแคลอรี่จากการวิ่ง</h2>
+        <form id="runForm">
+            <label>จุดเริ่มต้น (A):
+                <input type="text" id="start" required placeholder="เช่น สวนลุมพินี" autocomplete="new-password" list="placeList">
+            </label>
+            <label>จุดหมายปลายทาง (B):
+                <input type="text" id="end" required placeholder="เช่น สวนจตุจักร" autocomplete="new-password" list="placeList">
+            </label>
+            <datalist id="placeList">
+                <option value="สวนลุมพินี">
+                <option value="สวนจตุจักร">
+                <option value="สวนรถไฟ">
+                <option value="สนามศุภชลาศัย">
+                <option value="สวนเบญจกิติ">
+                <option value="สวนหลวง ร.9">
+                <option value="สวนสาธารณะพระราม 9">
+                <option value="สวนวชิรเบญจทัศ (สวนรถไฟ)">
+                <option value="สวนสมเด็จพระนางเจ้าสิริกิติ์ฯ">
+                <option value="สวนธนบุรีรมย์">
+            </datalist>
+            <label>น้ำหนักตัว (กก.):
+                <input type="number" id="weight" required min="30" max="200" value="60">
+            </label>
+            <label>ความเร็วที่ต้องการ (กม./ชม.):
+                <input type="number" id="speed" required min="4" max="20" value="8">
+            </label>
+            <button type="submit">คำนวณ</button>
+            <button type="button" id="resetRunForm" style="margin-left:12px;background:#e0e7ef;color:#22223b;">รีเซ็ต</button>
+        </form>
+        <div class="result" id="result" style="display:none"></div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAQMmb7KMdARdX0KdW6RAt7itMKh8D34Y&libraries=places"></script>
+    <script>
+        // ตัวอย่างเส้นทางจำลอง (ในงานจริงควรใช้ AI หรือ API)
+        const mockRoutes = [
+            { name: 'เส้นทางหลัก', distance: 5.2 },
+            { name: 'เส้นทางวิวสวน', distance: 6.1 },
+            { name: 'เส้นทางลัด', distance: 4.7 }
+        ];
+
+        function estimateCalories(distance, weight, speed) {
+            // สูตรประมาณ: แคลอรี่ = น้ำหนัก(กก.) x ระยะทาง(กม.) x 1.036 (โดยประมาณ)
+            // สามารถปรับสูตรให้ซับซ้อนขึ้นได้
+            return (weight * distance * 1.036).toFixed(0);
+        }
+
+        async function getRoutesFromAPI(start, end, apiKey) {
+            const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}&mode=walking&alternatives=true&key=${apiKey}`;
+            const proxyUrl = 'https://corsproxy.io/?'; // ใช้ proxy เพื่อหลีกเลี่ยง CORS (สำหรับทดสอบเท่านั้น)
+            const res = await fetch(proxyUrl + url);
+            const data = await res.json();
+            if (!data.routes || data.routes.length === 0) return [];
+            return data.routes.map((route, idx) => ({
+                name: `เส้นทางที่ ${idx+1}`,
+                distance: route.legs[0].distance.value / 1000 // เป็นกิโลเมตร
+            }));
+        }
+
+        document.getElementById('runForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const start = document.getElementById('start').value.trim();
+            const end = document.getElementById('end').value.trim();
+            const weight = parseFloat(document.getElementById('weight').value);
+            const speed = parseFloat(document.getElementById('speed').value);
+            const apiKey = "AIzaSyAAQMmb7KMdARdX0KdW6RAt7itMKh8D34Y";
+            let routes = [];
+            let html = `<b>จาก</b> ${start} <b>ไป</b> ${end}<br><b>น้ำหนัก:</b> ${weight} กก. <br><b>ความเร็ว:</b> ${speed} กม./ชม.<br><br>`;
+            if (apiKey) {
+                html += '<b>กำลังค้นหาเส้นทางจริงจาก Google Maps...</b>';
+                document.getElementById('result').innerHTML = html;
+                document.getElementById('result').style.display = 'block';
+                routes = await getRoutesFromAPI(start, end, apiKey);
+            }
+            if (!routes.length) {
+                routes = [
+                    { name: 'เส้นทางหลัก', distance: 5.2 },
+                    { name: 'เส้นทางวิวสวน', distance: 6.1 },
+                    { name: 'เส้นทางลัด', distance: 4.7 }
+                ];
+            }
+            html += '<b>เส้นทางที่แนะนำ:</b><ul>';
+            routes.forEach(route => {
+                const cal = estimateCalories(route.distance, weight, speed);
+                const time = (route.distance / speed * 60).toFixed(0);
+                const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}&travelmode=walking`;
+                html += `<li>${route.name} (${route.distance.toFixed(2)} กม.) - ใช้เวลา ~${time} นาที, เผาผลาญ ~${cal} kcal <a href="${mapsUrl}" target="_blank" style="margin-left:8px;">ดูแผนที่</a></li>`;
+            });
+            html += '</ul>';
+            document.getElementById('result').innerHTML = html;
+            document.getElementById('result').style.display = 'block';
+        };
+
+        document.getElementById('resetRunForm').onclick = function() {
+            document.getElementById('runForm').reset();
+            document.getElementById('result').style.display = 'none';
+        };
+
+        // Auth logic
+        const authContainer = document.getElementById('authContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const toggleAuth = document.getElementById('toggleAuth');
+        const toggleLogin = document.getElementById('toggleLogin');
+        const authTitle = document.getElementById('authTitle');
+        const authMsg = document.getElementById('authMsg');
+
+        function showLoginForm() {
+            loginForm.style.display = '';
+            registerForm.style.display = 'none';
+            toggleAuth.style.display = '';
+            toggleLogin.style.display = 'none';
+            authTitle.innerText = 'เข้าสู่ระบบ';
+            authMsg.innerText = '';
+        }
+        function showRegisterForm() {
+            loginForm.style.display = 'none';
+            registerForm.style.display = '';
+            toggleAuth.style.display = 'none';
+            toggleLogin.style.display = '';
+            authTitle.innerText = 'สมัครสมาชิก';
+            authMsg.innerText = '';
+        }
+        showRegister.onclick = function(e) { e.preventDefault(); showRegisterForm(); };
+        showLogin.onclick = function(e) { e.preventDefault(); showLoginForm(); };
+
+        // Register
+        registerForm.onsubmit = function(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            if (!username || !password) {
+                authMsg.innerText = 'กรุณากรอกข้อมูลให้ครบ';
+                return;
+            }
+            if (localStorage.getItem('user_' + username)) {
+                authMsg.innerText = 'ชื่อผู้ใช้นี้ถูกใช้แล้ว';
+                return;
+            }
+            localStorage.setItem('user_' + username, password);
+            authMsg.style.color = 'green';
+            authMsg.innerText = 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ';
+            setTimeout(() => { showLoginForm(); authMsg.style.color = 'red'; }, 1200);
+        };
+        // Login
+        loginForm.onsubmit = function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!username || !password) {
+                authMsg.innerText = 'กรุณากรอกข้อมูลให้ครบ';
+                return;
+            }
+            const saved = localStorage.getItem('user_' + username);
+            if (!saved || saved !== password) {
+                authMsg.innerText = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+                return;
+            }
+            // ซ่อน auth แสดงเว็บหลัก
+            authContainer.style.display = 'none';
+            document.querySelectorAll('.container').forEach(c => { if (c !== authContainer) c.style.display = ''; });
+            // เปลี่ยนพื้นหลังเมื่อเข้าสู่หน้า AI คำนวณแคลอรี่
+            document.body.style.background = "url('https://run2paradise.com/wp-content/uploads/2024/01/benefits-running-1024x538.jpg') center center/cover no-repeat";
+            // ซ่อนข้อความ quote
+            var quote = document.querySelector('.login-quote');
+            if (quote) quote.style.display = 'none';
+        };
+        // ซ่อนเว็บหลักถ้ายังไม่ล็อกอิน
+        document.querySelectorAll('.container').forEach(c => { if (c !== authContainer) c.style.display = 'none'; });
+    </script>
+</body>
+</html>
